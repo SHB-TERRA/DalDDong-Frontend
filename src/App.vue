@@ -12,12 +12,12 @@ export default {
 
 <style>
 #app {
-    width: 100vw;
-    height: 100vh;
+    width: 100%;
+    min-height: 100vh;
 }
 #page {
     width: 100%;
-    height: 100%;
+    height: 100vh;
 }
 
 .row {

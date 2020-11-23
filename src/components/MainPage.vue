@@ -3,8 +3,8 @@
         <nav class="row va ha">
             <div id="menu-list" class="content row">
                 <div id="menu-left" class="row">
-                    <a v-if="!scheduleMode" class="menu-button" @click="scheduleMode=true">약속 추가</a>
-                    <a v-if="scheduleMode" class="menu-button" @click="scheduleMode=false">취소</a>
+                    <a v-if="!scheduleMode" class="menu-button" @click="changeScheduleMode(true)">약속 추가</a>
+                    <a v-if="scheduleMode" class="menu-button" @click="changeScheduleMode(false)">취소</a>
                     <a class="menu-button" @click="openPage('NewPartyPage')">파티 만들기</a>
                 </div>
                 <div id="menu-center" class="row va ha">
@@ -16,13 +16,14 @@
                 </div>
             </div>
         </nav>
+        <div id="topbox"></div>
         <section v-if="scheduleMode" class="row va ha">
             <div id="schedule" class="content">
                 <input id="title-field" type="text" v-model="schedule.title" placeholder="약속 이름">
                 <input v-for="participant in schedule.participants" class="btn" type="button" :key="participant" :value="participant" @click="deleteParticipant(participant)">
                 <input id="text-field" type="text" v-model="schedule.participantValue" placeholder="..참석자 추가" @keyup.enter="addParticipant">
-                <p>{{dateSelected.format('Y')}}년 {{dateSelected.format('M')}}월 {{dateSelected.get('date')}}일 {{days[dateSelected.format('d')]}}요일</p>
-                <input class="numpicker" type="number" v-model="schedule.hour" min="10" max="22"><span>시</span>
+                <p>{{selectedYear}}년 {{selectedMonth}}월 {{selectedDay}}일 {{days[dateSelected.format('d')]}}요일</p>
+                <input class="numpicker" type="number" v-model="schedule.hour" min="9" max="14"><span>시</span>
                 <input class="numpicker" type="number" v-model="schedule.minute" min="0" max="55" step="5"><span>분</span><br>
                 <input class="btn" type="button" value="약속 추가">
             </div>
@@ -40,7 +41,7 @@
                     <li v-for="day in days" :key="day">{{day}}</li>
                 </ul>
                 <ul class="dates">
-                    <li v-for="blank in firstDayOfMonth" :key="blank+100">&nbsp;</li><li v-for="date in daysInMonth" :key="date" :id="(date==initialDate && month==initialMonth && year==initialYear) ? 'current-day' : ''" @click="dateSelectedChange(date)">{{date}}</li>
+                    <li v-for="blank in firstDayOfMonth" :key="blank+100"><br>&nbsp;</li><li v-for="date in daysInMonth" :key="date" :id="(year==initialYear && month==initialMonth && date==initialDate) ? 'current-day' : ((year==selectedYear && month==selectedMonth && date==selectedDay) ? 'selected-day' : '')" @click="dateSelectedChange(date)">{{date}}<br><span class="event-day">undefined</span></li>
                 </ul>
             </div>
         </section>
@@ -64,6 +65,9 @@ export default {
             today: moment(),
             dateContext: moment(),
             dateSelected: moment(),
+            selectedDay: 1,
+            selectedMonth: 0,
+            selectedYear: 0,
             days: ['일', '월', '화', '수', '목', '금', '토'],
             year: 0,
             month: 0,
@@ -96,6 +100,9 @@ export default {
             this.initialDate = this.today.format('D')
             this.initialMonth = this.today.format('M')
             this.initialYear = this.today.format('Y')
+            this.selectedDay = this.dateSelected.get('date')
+            this.selectedMonth = this.dateSelected.format('M')
+            this.selectedYear = this.dateSelected.format('Y')
         },
         addParticipant() {
             this.schedule.participants.push(this.schedule.participantValue)
@@ -109,7 +116,23 @@ export default {
             this.dateSelected.date(date)
             this.dateSelected.month(this.month-1)
             this.dateSelected.year(this.year)
+            this.selectedDay = this.dateSelected.get('date')
+            this.selectedMonth = this.dateSelected.format('M')
+            this.selectedYear = this.dateSelected.format('Y')
             this.scheduleMode = true
+        },
+        changeScheduleMode(open) {
+            if (open) {
+                this.dateSelected.date(this.initialDate)
+                this.dateSelected.month(this.month-1)
+                this.dateSelected.year(this.year)
+                this.scheduleMode = true
+                this.initCalendar()
+            } else {
+                this.dateSelected.year(0)
+                this.scheduleMode = false
+                this.initCalendar()
+            }
         }
     },
     mounted() {
@@ -178,6 +201,10 @@ nav {
     cursor: pointer;
 }
 
+#topbox {
+    height: 50px;
+}
+
 #title-field, #text-field {
     box-sizing: border-box;
     width: 100%;
@@ -208,7 +235,7 @@ nav {
 }
 
 #calendar, #schedule {
-    margin-top: 75px;
+    margin-top: 25px;
     border: 1px solid #e4e4e4;
     background: #fff;
 }
@@ -276,8 +303,19 @@ nav {
 }
 
 #current-day {
-    background: #1abc9c;
-    color: white !important
+    color: darkred;
+    font-weight: bolder;
+}
+
+#selected-day {
+    background: lightgray;
+    transform: scale(0.9);
+    transition: .5s ease;
+}
+
+#event-day {
+    background: purple;
+    padding: 0 3px;
 }
 
 @media screen and (max-width:720px) {
