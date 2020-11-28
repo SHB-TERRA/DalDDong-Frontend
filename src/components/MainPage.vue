@@ -3,8 +3,8 @@
         <nav class="row va ha">
             <div id="menu-list" class="content row">
                 <div id="menu-left" class="row">
-                    <a v-if="!scheduleMode" class="menu-button" @click="changeScheduleMode(true)">약속 추가</a>
-                    <a v-if="scheduleMode" class="menu-button" @click="changeScheduleMode(false)">취소</a>
+                    <a v-if="!scheduleMode" class="menu-button" @click="scheduleMode=true">약속 추가</a>
+                    <a v-if="scheduleMode" class="menu-button" @click="scheduleMode=false">취소</a>
                     <a class="menu-button" @click="openPage('NewPartyPage')">파티 만들기</a>
                 </div>
                 <div id="menu-center" class="row va ha">
@@ -22,36 +22,25 @@
                 <input id="title-field" type="text" v-model="schedule.title" placeholder="약속 이름">
                 <input v-for="participant in schedule.participants" class="btn" type="button" :key="participant" :value="participant" @click="deleteParticipant(participant)">
                 <input id="text-field" type="text" v-model="schedule.participantValue" placeholder="..참석자 추가" @keyup.enter="addParticipant">
-                <p>{{selectedYear}}년 {{selectedMonth}}월 {{selectedDay}}일 {{days[dateSelected.format('d')]}}요일</p>
+                <p>{{schedule.year}}년 {{schedule.month}}월 {{schedule.date}}일</p>
                 <input class="numpicker" type="number" v-model="schedule.hour" min="9" max="14"><span>시</span>
                 <input class="numpicker" type="number" v-model="schedule.minute" min="0" max="55" step="5"><span>분</span><br>
                 <input class="btn" type="button" value="약속 추가">
             </div>
         </section>
         <section class="row va ha">
-            <div id="calendar" class="content">
-                <div class="month">
-                    <ul>
-                        <li class="prev" @click="changeMonth(1)">◀</li>
-                        <li class="next" @click="changeMonth(0)">▶</li>
-                        <li><span style="font-size:12px">{{year}}년</span> {{month}}월</li>
-                    </ul>
-                </div>
-                <ul class="weekdays">
-                    <li v-for="day in days" :key="day">{{day}}</li>
-                </ul>
-                <ul class="dates">
-                    <li v-for="blank in firstDayOfMonth" :key="blank+100"><br>&nbsp;</li><li v-for="date in daysInMonth" :key="date" :id="(year==initialYear && month==initialMonth && date==initialDate) ? 'current-day' : ((year==selectedYear && month==selectedMonth && date==selectedDay) ? 'selected-day' : '')" @click="dateSelectedChange(date)">{{date}}<br><span class="event-day">undefined</span></li>
-                </ul>
-            </div>
+            <CalendarComp id="calendar" class="content" :schedule-mode="scheduleMode" :selected-year="schedule.year" :selected-month="schedule.month" :selected-date="schedule.date" @change-schedule="changeScheduleMode" @change-selected="changeSelected"/>
         </section>
     </div>
 </template>
 
 <script>
-import moment from 'moment'
+import CalendarComp from './CalendarComp'
 
 export default {
+    components: {
+        CalendarComp
+    },
     data() {
         return {
             scheduleMode: false,
@@ -59,51 +48,15 @@ export default {
                 title: '',
                 participants: [],
                 participantValue: '',
+                year: 0,
+                month: 0,
+                date: 0,
                 hour: 11,
                 minute: 20
             },
-            today: moment(),
-            dateContext: moment(),
-            dateSelected: moment(),
-            selectedDay: 1,
-            selectedMonth: 0,
-            selectedYear: 0,
-            days: ['일', '월', '화', '수', '목', '금', '토'],
-            year: 0,
-            month: 0,
-            daysInMonth: 0,
-            currentDate: 0,
-            firstDayOfMonth: 0,
-            initialDate: 0,
-            initialMonth: 0,
-            initialYear: 0
         }
     },
     methods: {
-        openPage(page) {
-            this.$router.push({name: page})
-        },
-        changeMonth(reverse) {
-            if (!reverse) {
-                this.dateContext = moment(this.dateContext).add(1, 'month')
-            } else {
-                this.dateContext = moment(this.dateContext).subtract(1, 'month')
-            }
-            this.initCalendar()
-        },
-        initCalendar() {
-            this.year = this.dateContext.format('Y')
-            this.month = this.dateContext.format('M')
-            this.currentDate = this.dateContext.get('date')
-            this.firstDayOfMonth = moment(this.dateContext).subtract((this.currentDate - 1), 'days').weekday()
-            this.daysInMonth = this.dateContext.daysInMonth()
-            this.initialDate = this.today.format('D')
-            this.initialMonth = this.today.format('M')
-            this.initialYear = this.today.format('Y')
-            this.selectedDay = this.dateSelected.get('date')
-            this.selectedMonth = this.dateSelected.format('M')
-            this.selectedYear = this.dateSelected.format('Y')
-        },
         addParticipant() {
             this.schedule.participants.push(this.schedule.participantValue)
             this.schedule.participantValue = ''
@@ -111,33 +64,23 @@ export default {
         deleteParticipant(participant) {
             this.schedule.participants.splice(this.schedule.participants.indexOf(participant), 1)
         },
-        dateSelectedChange(date) {
-            this.scheduleMode = false
-            this.dateSelected.date(date)
-            this.dateSelected.month(this.month-1)
-            this.dateSelected.year(this.year)
-            this.selectedDay = this.dateSelected.get('date')
-            this.selectedMonth = this.dateSelected.format('M')
-            this.selectedYear = this.dateSelected.format('Y')
-            this.scheduleMode = true
-        },
-        changeScheduleMode(open) {
-            if (open) {
-                this.dateSelected.date(this.initialDate)
-                this.dateSelected.month(this.month-1)
-                this.dateSelected.year(this.year)
-                this.scheduleMode = true
-                this.initCalendar()
-            } else {
-                this.dateSelected.year(0)
-                this.scheduleMode = false
-                this.initCalendar()
+        changeSelected(key, value) {
+            switch (key) {
+                case 'y':
+                    this.schedule.year = value
+                    break
+                case 'm':
+                    this.schedule.month = value
+                    break
+                case 'd':
+                    this.schedule.date = value
+                    break
             }
+        },
+        changeScheduleMode(mode) {
+            this.scheduleMode = mode
         }
     },
-    mounted() {
-        this.initCalendar()
-    }
 }
 </script>
 
@@ -234,100 +177,16 @@ nav {
     transition: all 1s;
 }
 
-#calendar, #schedule {
+#schedule {
     margin-top: 25px;
     border: 1px solid #e4e4e4;
     background: #fff;
-}
-#calendar li {
-    list-style-type: none;
-}
-#schedule {
     padding: 30px;
 }
 
-.month {
-    padding: 50px 25px;
-    width: 100%;
-    box-sizing: border-box;
-    text-align: center;
-}
-
-.month ul {
-    margin: 0;
-    padding: 0;
-}
-
-.month ul li {
-    font-size: 20px;
-    text-transform: uppercase;
-    letter-spacing: 3px;
-}
-
-.month .prev, .month .next {
-    cursor: pointer;
-    user-select: none;
-}
-.month .prev {
-    float: left;
-}
-.month .next {
-    float: right;
-}
-
-.weekdays {
-    margin: 0;
-    padding: 10px 0;
-}
-
-.weekdays li {
-    display: inline-block;
-    width: 14.1%;
-    color: #666;
-    text-align: center;
-}
-
-.dates {
-    padding: 10px 0;
-    margin: 0;
-}
-
-.dates li {
-    display: inline-block;
-    width: 14.1%;
-    height: 50px;
-    text-align: center;
-    font-size: 12px;
-    color: #777;
-    cursor: pointer
-}
-
-#current-day {
-    color: darkred;
-    font-weight: bolder;
-}
-
-#selected-day {
-    background: lightgray;
-    transform: scale(0.9);
-    transition: .5s ease;
-}
-
-#event-day {
-    background: purple;
-    padding: 0 3px;
-}
-
-@media screen and (max-width:720px) {
-    .weekdays li, .dates li {width: 13.1%;}
-}
-
-@media screen and (max-width: 420px) {
-    .weekdays li, .dates li {width: 12.5%;}
-    .days li .active {padding: 2px;}
-}
-
-@media screen and (max-width: 290px) {
-    .weekdays li, .dates li {width: 12.2%;}
+#calendar {
+    margin-top: 25px;
+    border: 1px solid #e4e4e4;
+    background: #fff;
 }
 </style>
