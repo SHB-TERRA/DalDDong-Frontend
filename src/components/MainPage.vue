@@ -25,11 +25,12 @@
                 <p>{{schedule.year}}년 {{schedule.month}}월 {{schedule.date}}일</p>
                 <input class="numpicker" type="number" v-model="schedule.hour" min="9" max="14"><span>시</span>
                 <input class="numpicker" type="number" v-model="schedule.minute" min="0" max="55" step="5"><span>분</span><br>
-                <input class="btn" type="button" value="약속 추가">
+                <input class="btn" type="button" @click="requestAddEvent()" value="약속 추가">
+                <!--일단 행번으로 보내고 나중에 동명이인 선택창 추가-->
             </div>
         </section>
         <section class="row va ha">
-            <CalendarComp id="calendar" class="content" :schedule-mode="scheduleMode" :selected-year="schedule.year" :selected-month="schedule.month" :selected-date="schedule.date" @change-schedule="changeScheduleMode" @change-selected="changeSelected"/>
+            <CalendarComp id="calendar" class="content" :schedule-mode="scheduleMode" :selected-year="schedule.year" :selected-month="schedule.month" :selected-date="schedule.date" :promises="promises" @change-schedule="changeScheduleMode" @change-selected="changeSelected"/>
         </section>
     </div>
 </template>
@@ -43,9 +44,10 @@ export default {
     },
     data() {
         return {
+            promises: {9:'ㅁㄴㅇㄹ', 15:'ㅋㅌㅊㅍ'},
             scheduleMode: false,
             schedule: {
-                title: '',
+                name: '',
                 participants: [],
                 participantValue: '',
                 year: 0,
@@ -57,6 +59,9 @@ export default {
         }
     },
     methods: {
+        openPage(page) {
+            this.$router.push({name: page})
+        },
         addParticipant() {
             this.schedule.participants.push(this.schedule.participantValue)
             this.schedule.participantValue = ''
@@ -79,6 +84,10 @@ export default {
         },
         changeScheduleMode(mode) {
             this.scheduleMode = mode
+        },
+        requestAddEvent() {
+            this.axios.post('/api/data', ).then(
+                res => { console.log(res.data) })
         }
     },
 }

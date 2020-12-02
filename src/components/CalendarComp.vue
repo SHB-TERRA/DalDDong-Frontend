@@ -11,7 +11,7 @@
             <li v-for="day in days" :key="day">{{day}}</li>
         </ul>
         <ul class="dates">
-            <li v-for="blank in firstDayOfMonth" :key="blank+100"><br>&nbsp;</li><li v-for="date in daysInMonth" :key="date" :id="(contextYear==initialYear && contextMonth==initialMonth && date==initialDate) ? 'current-day' : ((contextYear==selectedYear && contextMonth==selectedMonth && date==selectedDate) ? 'selected-day' : '')" @click="dateSelectedChange(date)">{{date}}<br><span class="event-day">undefined</span></li>
+            <li v-for="blank in firstDayOfMonth" :key="blank+100"><br>&nbsp;</li><li v-for="date in daysInMonth" :key="date" :class="{'current-day':(contextYear==initialYear && contextMonth==initialMonth && date==initialDate),'selected-day':(contextYear==selectedYear && contextMonth==selectedMonth && date==selectedDate)}" @click="dateSelectedChange(date)">{{date}}<br><span :class="{'event-day':promises[date]}">&nbsp;{{promises[date]}}&nbsp;</span></li>
         </ul>
     </div>
 </template>
@@ -20,7 +20,7 @@
 import moment from 'moment'
 
 export default {
-    props: ['scheduleMode', 'selectedDate', 'selectedMonth', 'selectedYear'],
+    props: ['scheduleMode', 'selectedDate', 'selectedMonth', 'selectedYear', 'promises'],
     data() {
         return {
             days: ['일', '월', '화', '수', '목', '금', '토'],
@@ -37,9 +37,6 @@ export default {
         }
     },
     methods: {
-        openPage(page) {
-            this.$router.push({name: page})
-        },
         initCalendar() {
             this.initialYear = this.dateInitial.format('Y')
             this.initialMonth = this.dateInitial.format('M')
@@ -63,6 +60,7 @@ export default {
             this.$emit('change-selected', 'd', date)
             this.$emit('change-selected', 'm', this.contextMonth)
             this.$emit('change-selected', 'y', this.contextYear)
+            this.$emit('close')
         },
     },
     watch: {
@@ -145,19 +143,20 @@ li {
     cursor: pointer
 }
 
-#current-day {
-    color: darkred;
+.current-day {
+    color: red !important;
     font-weight: bolder;
 }
 
-#selected-day {
+.selected-day {
     background: lightgray;
     transform: scale(0.9);
     transition: .5s ease;
 }
 
-#event-day {
+.event-day {
     background: purple;
+    color: #fff;
     padding: 0 3px;
 }
 

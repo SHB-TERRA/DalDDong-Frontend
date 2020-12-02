@@ -1,19 +1,21 @@
 <template>
     <div id="page" class="row va ha">
         <div v-if="!register" id="login-box" class="content column va ha marin pad">
-            <input v-model="userValue.id" type="text" placeholder="사번">
-            <input v-model="userValue.pw" type="password" placeholder="비밀번호">
-            <input :click="doLogin" type="submit" value="로그인">
+            <input v-model="userValue.email" type="text" placeholder="메일">
+            <input v-model="userValue.password" type="password" placeholder="비밀번호">
+            <input @click="requestLogin" type="submit" value="로그인">
             <h6 @click="switchMode">또는 회원가입</h6>
         </div>
         <div v-if="register" id="login-box" class="content column va ha marin pad">
             <h6 @click="switchMode">로그인으로 돌아가기</h6>
-            <input v-model="userValue.mail" type="email" placeholder="웹메일 주소">
-            <input v-model="userValue.id" type="text" placeholder="사번">
-            <input v-model="userValue.pw" type="password" placeholder="비밀번호">
-            <input v-model="userValue.pwchk" type="password" placeholder="비밀번호 다시 입력">
-            <input type="submit" value="회원가입">
+            <input v-model="userValue.name" type="text" placeholder="성명">
+            <input v-model="userValue.email" type="email" placeholder="웹메일 주소">
+            <input v-model="userValue.user_id" type="text" placeholder="사번">
+            <input v-model="userValue.password" type="password" placeholder="비밀번호">
+            <input v-model="pwchk" type="password" placeholder="비밀번호 다시 입력">
+            <input type="submit" @click="requestRegister" value="회원가입">
         </div>
+        <!--메일 인증 페이지 추가-->
     </div>
 </template>
 
@@ -23,19 +25,28 @@ export default {
         return {
             register: false,
             userValue: {
-                id: '',
-                pw: '',
-                pwchk: '',
-                mail: ''
-            }
+                name: '',
+                user_id: '',
+                password: '',
+                email: ''
+            },
+            pwchk: ''
         }
     },
     methods: {
         switchMode() {
             this.register = !(this.register)
         },
-        doLogin() {
-            // this.$http.get('/api/login')
+        requestLogin() {
+            this.axios.post('/users', this.userValue).then(
+                res => { console.log(res.data) })
+        },
+        requestRegister() {
+            console.log(this.userValue)
+            if (this.userValue.password != this.pwchk) return
+
+            this.axios.post('/users', this.userValue).then(
+                res => { console.log(res.data) })
         }
     }
 }
