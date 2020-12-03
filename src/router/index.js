@@ -3,6 +3,7 @@ import Router from 'vue-router'
 
 import MainPage from '@/components/MainPage'
 import LoginPage from '@/components/LoginPage'
+import RegisterPage from '@/components/RegisterPage'
 import NewPartyPage from '@/components/NewPartyPage'
 import MyPage from '@/components/MyPage'
 
@@ -19,6 +20,11 @@ export default new Router({
       path: '/login',
       name: 'LoginPage',
       component: LoginPage
+    },
+    {
+      path: '/reg',
+      name: 'RegisterPage',
+      component: RegisterPage
     },
     {
       path: '/new',

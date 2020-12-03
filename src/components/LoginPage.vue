@@ -1,21 +1,11 @@
 <template>
     <div id="page" class="row va ha">
-        <div v-if="!register" id="login-box" class="content column va ha marin pad">
+        <div id="login-box" class="content column va ha marin pad">
             <input v-model="userValue.email" type="text" placeholder="메일">
             <input v-model="userValue.password" type="password" placeholder="비밀번호">
             <input @click="requestLogin" type="submit" value="로그인">
-            <h6 @click="switchMode">또는 회원가입</h6>
+            <h6 @click="openPage('RegisterPage')">또는 회원가입</h6>
         </div>
-        <div v-if="register" id="login-box" class="content column va ha marin pad">
-            <h6 @click="switchMode">로그인으로 돌아가기</h6>
-            <input v-model="userValue.name" type="text" placeholder="성명">
-            <input v-model="userValue.email" type="email" placeholder="웹메일 주소">
-            <input v-model="userValue.user_id" type="text" placeholder="사번">
-            <input v-model="userValue.password" type="password" placeholder="비밀번호">
-            <input v-model="pwchk" type="password" placeholder="비밀번호 다시 입력">
-            <input type="submit" @click="requestRegister" value="회원가입">
-        </div>
-        <!--메일 인증 페이지 추가-->
     </div>
 </template>
 
@@ -23,31 +13,20 @@
 export default {
     data() {
         return {
-            register: false,
             userValue: {
-                name: '',
-                user_id: '',
                 password: '',
                 email: ''
             },
-            pwchk: ''
         }
     },
     methods: {
-        switchMode() {
-            this.register = !(this.register)
+        openPage(page) {
+            this.$router.push({name: page})
         },
         requestLogin() {
-            this.axios.post('/users', this.userValue).then(
+            this.axios.post('/users/login', this.userValue).then(
                 res => { console.log(res.data) })
         },
-        requestRegister() {
-            console.log(this.userValue)
-            if (this.userValue.password != this.pwchk) return
-
-            this.axios.post('/users', this.userValue).then(
-                res => { console.log(res.data) })
-        }
     }
 }
 </script>
