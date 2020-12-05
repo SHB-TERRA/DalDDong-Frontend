@@ -86,14 +86,14 @@ export default {
             }
         },
         requestPromises(cal) {
-            this.$http.get(`/calendar/${this.userInfo.id}`).then(res => {
+            this.$http.get(`http://20.194.29.5/calendar/${this.userInfo.id}`).then(res => {
                 console.log(res.data)
                 this.promises = res.data[cal]
             })
         },
         requestDeleteEvent() {
             if (confirm('정말로 이 약속을 삭제하시겠습니까?')) {
-                this.$http.delete(`/calendar/${this.userInfo.id}`).then(res => {
+                this.$http.delete(`http://20.194.29.5/calendar/${this.userInfo.id}`).then(res => {
                     console.log(res.data)
                     this.detailMode = false
                     this.initCalendar()

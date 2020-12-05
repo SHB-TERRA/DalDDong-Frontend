@@ -94,7 +94,7 @@ export default {
             var sch = this.schedule
             var cvt = this.convertDate
 
-            this.$http.post(`/calendar/${this.userInfo.id}`, {
+            this.$http.post(`http://20.194.29.5/calendar/${this.userInfo.id}`, {
                     "participants":sch.participants,
                     "promise_day":`${sch.year}-${cvt(sch.month)}-${cvt(sch.date)}`,
                     "promise_time":`${cvt(sch.hour)}:${cvt(sch.minute)}`,

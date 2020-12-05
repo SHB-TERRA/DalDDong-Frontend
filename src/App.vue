@@ -22,7 +22,7 @@ export default {
                 reg = data
             } else {
                 reg = {logout: true}
-                this.$http.post('/users/logout', {'email':reg.email, 'password':reg.password}).then(res => {
+                this.$http.post('http://20.194.29.5/users/logout', {'email':reg.email, 'password':reg.password}).then(res => {
                     console.log(res.data)
                     this.$router.push({name: 'LoginPage'})
                 })

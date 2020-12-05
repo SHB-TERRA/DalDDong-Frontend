@@ -6,7 +6,7 @@
             <input v-model="userValue.email" type="text" placeholder="메일">
             <input v-model="userValue.password" type="password" placeholder="비밀번호">
             <input @click="requestLogin" type="submit" value="로그인">
-            <h6 @click="openPage('RegisterPage')">또는 회원가입</h6>
+            <h5 @click="openPage('RegisterPage')">또는 회원가입</h5>
         </div>
     </div>
 </template>
@@ -26,7 +26,7 @@ export default {
             this.$router.push({name: page})
         },
         requestLogin() {
-            this.$http.post('/users/login', this.userValue).then(res => {
+            this.$http.post('http://20.194.29.5/users/login', this.userValue).then(res => {
                 console.log(res.data)
                 if ('info' in res.data && 'message' in res.data) {
                     alert(res.data['result'], res.data.info['message'])
@@ -41,6 +41,18 @@ export default {
 </script>
 
 <style scoped>
+input[type="text"], input[type="password"] {
+    font-size: 20px;
+    outline: none;
+    border: none;
+    border-bottom: 2px solid lightseagreen;
+}
+input[type="submit"] {
+    font-size: 20px;
+    background: #fff;
+    border: 1px solid lightseagreen;
+}
+
 .marin > * {
     margin: 7.5px;
 }
@@ -58,7 +70,7 @@ export default {
     background: #fff;
 }
 
-h6 {
+h5 {
     cursor: pointer;
 }
 </style>

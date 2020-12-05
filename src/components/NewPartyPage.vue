@@ -98,7 +98,7 @@ export default {
             this.newparty = {title: '', place: '', mplace: '', maxp: 2, year: 0, month: 0, date: 0, hour: 11, minute: 20}
         },
         initPage() {
-            this.$http.get('/promises').then(res => {
+            this.$http.get('http://20.194.29.5/promises').then(res => {
                 console.log(res.data)
                 this.parties = res.data['rows']
                 this.partieslen = res.data['count']
@@ -108,7 +108,7 @@ export default {
             var np = this.newparty
             var cvt = this.convertDate
 
-            this.$http.post(`/promises`, {
+            this.$http.post(`http://20.194.29.5/promises`, {
                     "meeting_place":np.mplace,
                     "place":np.place,
                     "max_people":np.maxp,
@@ -124,7 +124,7 @@ export default {
             })
         },
         requestJoin(id) {
-            this.$http.put(`/promises/${id}`, {"user_id":this.userInfo['user_id']}).then(res => {
+            this.$http.put(`http://20.194.29.5/promises/${id}`, {"user_id":this.userInfo['user_id']}).then(res => {
                 console.log(res.data)
                 if ('message' in res.data) {
                     alert(res.data['message'])
@@ -137,7 +137,7 @@ export default {
         },
         requestDelete(id) {
             if (confirm('정말로 이 약속을 삭제하시겠습니까?')) {
-                this.$http.delete(`/promises/${id}`).then(res => {
+                this.$http.delete(`http://20.194.29.5/promises/${id}`).then(res => {
                     console.log(res.data)
                     if ('message' in res.data) {
                         alert(res.data['message'])

@@ -51,7 +51,7 @@ export default {
                 return
             }
 
-            this.$http.post('/users', reg).then(res => {
+            this.$http.post('http://20.194.29.5/users', reg).then(res => {
                 console.log(res.data)
                 if ('message' in res.data) {
                     alert(res.data['message'])
@@ -63,7 +63,7 @@ export default {
         requestRegister() {
             var reg = this.userValue
 
-            this.$http.post('/users/auth', {'email':reg.email, 'password':reg.password, 'key_for_verify':this.authcode}).then(res => {
+            this.$http.post('http://20.194.29.5/users/auth', {'email':reg.email, 'password':reg.password, 'key_for_verify':this.authcode}).then(res => {
                 console.log(res.data)
                 if ('message' in res.data) {
                     alert(res.data['message'])
