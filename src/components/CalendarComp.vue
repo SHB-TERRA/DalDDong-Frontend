@@ -45,13 +45,7 @@ export default {
             contextDate: 0,
             daysInMonth: 0,
             firstDayOfMonth: 0,
-            promises: {
-                "1":{"title":"시발",
-                "users":[20100272, 69746974, 88881661],
-                "place":"마라탕",
-                "meeting_place":"부영18층",
-                "time":"11:20:00"}
-            },
+            promises: {},
             detailMode: false,
             detail: {},
             detailDate: ''

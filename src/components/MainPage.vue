@@ -138,10 +138,10 @@ export default {
         }
     },
     mounted() {
-        // if ('logout' in this.userInfo) {
-        //     this.$router.push({name: 'LoginPage'})
-        //     return
-        // }
+        if ('logout' in this.userInfo) {
+            this.$router.push({name: 'LoginPage'})
+            return
+        }
     }
 }
 </script>
