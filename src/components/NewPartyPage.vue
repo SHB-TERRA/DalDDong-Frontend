@@ -9,8 +9,8 @@
                     <b>파티 만들기</b>
                 </div>
                 <div id="menu-right" class="row">
-                    <a class="menu-button" @click="$emit('set-user-status', false)">로그아웃</a>
-                    <a class="menu-button">마이페이지</a>
+                    <a class="menu-button" @click="$emit('set-user-status', false);$router.push({name:'LoginPage'})">로그아웃</a>
+                    <a class="menu-button">{{userInfo['name']}}</a>
                 </div>
             </div>
         </nav>
@@ -158,10 +158,10 @@ export default {
         }
     },
     mounted() {
-        // if ('logout' in this.userInfo) {
-        //     this.$router.push({name: 'LoginPage'})
-        //     return
-        // }
+        if ('logout' in this.userInfo) {
+            this.$router.push({name: 'LoginPage'})
+            return
+        }
         this.initPage()
     }
 }
@@ -284,5 +284,9 @@ pre {
     margin-top: 25px;
     border: 1px solid #e4e4e4;
     background: #fff;
+}
+
+@media screen and (max-width:720px) {
+    #menu-center { display: none; }
 }
 </style>

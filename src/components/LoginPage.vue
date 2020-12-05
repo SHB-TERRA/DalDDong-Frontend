@@ -1,6 +1,8 @@
 <template>
     <div id="page" class="row va ha">
         <div id="login-box" class="content column va ha marin pad">
+            <h2>대신 달똥해드립니다</h2>
+            <p style="margin: 0 0 20px">by SHB-TERRA</p>
             <input v-model="userValue.email" type="text" placeholder="메일">
             <input v-model="userValue.password" type="password" placeholder="비밀번호">
             <input @click="requestLogin" type="submit" value="로그인">

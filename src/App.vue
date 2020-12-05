@@ -33,6 +33,28 @@ export default {
 </script>
 
 <style>
+@font-face {
+    font-family: SpoqaHanSans;
+    src: url('./assets/spoqahansans-reg.woff') format('woff')
+}
+@font-face {
+    font-family: SpoqaHanSansBold;
+    src: url('./assets/spoqahansans-bold.woff') format('woff')
+}
+
+* {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    text-shadow: rgba(0,0,0,.01) 0 0 1px;
+    word-break: keep-all;
+    font-family: SpoqaHanSans, sans-serif;
+}
+
+.btn, button, h2 {
+    font-family: SpoqaHanSansBold, sans-serif !important;
+}
+
 #app {
     width: 100%;
     min-height: 100vh;

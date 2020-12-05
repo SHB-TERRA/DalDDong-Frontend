@@ -15,9 +15,9 @@
             <li v-for="blank in firstDayOfMonth" :key="blank+100"><br>&nbsp;</li><li v-for="date in daysInMonth" :key="date" :class="{'current-day':(contextYear==initialYear && contextMonth==initialMonth && date==initialDate),'selected-day':(contextYear==selectedYear && contextMonth==selectedMonth && date==selectedDate)}" @click="dateSelectedChange(date)">{{date}}<br><span :class="{'event-day':date in promises}">&nbsp;{{date in promises ? promises[date]['title'] : ''}}&nbsp;</span></li>
         </ul>
     </div>
-    <div v-if="detailMode">
-        <input class="btn" type="button" @click="detailMode=false" value="돌아가기">
-        <h2>{{contextYear}}년 {{contextMonth}}월 {{detailDate}}일 {{detail['time']}}</h2>
+    <div v-if="detailMode" id="detail-section">
+        <input class="btn" type="button" @click="detailMode=false" value="◀">
+        <p>{{contextYear}}년 {{contextMonth}}월 {{detailDate}}일 {{detail['time']}}</p>
         <h2>{{detail['title']}}</h2>
         <p>{{detail['users']}}</p>
         <p>{{detail['place']}}</p>
@@ -45,7 +45,13 @@ export default {
             contextDate: 0,
             daysInMonth: 0,
             firstDayOfMonth: 0,
-            promises: {},
+            promises: {
+                "1":{"title":"시발",
+                "users":[20100272, 69746974, 88881661],
+                "place":"마라탕",
+                "meeting_place":"부영18층",
+                "time":"11:20:00"}
+            },
             detailMode: false,
             detail: {},
             detailDate: ''
@@ -78,9 +84,11 @@ export default {
                 this.$emit('change-selected', 'y', this.contextYear)
                 this.$emit('close')
             } else {
-                this.detail = this.promises[date]
-                this.detailDate = date
-                this.detailMode = true
+                if (date in this.promises) {
+                    this.detail = this.promises[date]
+                    this.detailDate = date
+                    this.detailMode = true
+                }
             }
         },
         requestPromises(cal) {
@@ -174,6 +182,7 @@ li {
     width: 14.1%;
     color: #666;
     text-align: center;
+    font-family: SpoqaHanSansBold, sans-serif !important;
 }
 
 .dates {
@@ -208,16 +217,7 @@ li {
     padding: 0 3px;
 }
 
-@media screen and (max-width:720px) {
-    .weekdays li, .dates li {width: 13.1%;}
-}
-
-@media screen and (max-width: 420px) {
-    .weekdays li, .dates li {width: 12.5%;}
-    .days li .active {padding: 2px;}
-}
-
-@media screen and (max-width: 290px) {
-    .weekdays li, .dates li {width: 12.2%;}
+#detail-section {
+    padding: 50px 30px;
 }
 </style>

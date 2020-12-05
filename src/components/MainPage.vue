@@ -3,16 +3,16 @@
         <nav class="row va ha">
             <div id="menu-list" class="content row">
                 <div id="menu-left" class="row">
-                    <a v-if="!scheduleMode" class="menu-button" @click="scheduleMode=true">약속 추가</a>
+                    <a v-if="!scheduleMode" class="menu-button" @click="scheduleMode=true">새 약속</a>
                     <a v-if="scheduleMode" class="menu-button" @click="scheduleMode=false">취소</a>
-                    <a class="menu-button" @click="openPage('NewPartyPage')">파티 만들기</a>
+                    <a class="menu-button" @click="openPage('NewPartyPage')">파티</a>
                 </div>
                 <div id="menu-center" class="row va ha">
                     <b>캘린더</b>
                 </div>
                 <div id="menu-right" class="row">
-                    <a class="menu-button" @click="$emit('set-user-status', false)">로그아웃</a>
-                    <a class="menu-button">마이페이지</a>
+                    <a class="menu-button" @click="$emit('set-user-status', false);$router.push({name:'LoginPage'})">로그아웃</a>
+                    <a class="menu-button">{{userInfo['name']}}</a>
                 </div>
             </div>
         </nav>
@@ -26,8 +26,9 @@
                 <input id="text-field" type="text" v-model="schedule.mplace" placeholder="모임 장소">
                 <p>{{schedule.year}}년 {{schedule.month}}월 {{schedule.date}}일</p>
                 <input class="numpicker" type="number" v-model="schedule.hour" min="9" max="14"><span>시</span>
-                <input class="numpicker" type="number" v-model="schedule.minute" min="0" max="55" step="5"><span>분</span><br>
+                <input class="numpicker" type="number" v-model="schedule.minute" min="0" max="55" step="5"><span>분</span><br><br>
                 <input class="btn" type="button" @click="requestAddEvent" value="약속 추가">
+                <input class="btn" type="button" @click="scheduleMode=false" value="취소">
                 <!--일단 행번으로 보내고 나중에 동명이인 선택창 추가-->
             </div>
         </section>
@@ -137,10 +138,10 @@ export default {
         }
     },
     mounted() {
-        if ('logout' in this.userInfo) {
-            this.$router.push({name: 'LoginPage'})
-            return
-        }
+        // if ('logout' in this.userInfo) {
+        //     this.$router.push({name: 'LoginPage'})
+        //     return
+        // }
     }
 }
 </script>
@@ -249,5 +250,9 @@ nav {
     margin-top: 25px;
     border: 1px solid #e4e4e4;
     background: #fff;
+}
+
+@media screen and (max-width:720px) {
+    #menu-center { display: none; }
 }
 </style>
