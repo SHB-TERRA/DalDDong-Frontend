@@ -26,14 +26,13 @@ export default {
             this.$router.push({name: page})
         },
         requestLogin() {
-            this.$http.post('http://20.194.29.5/users/login', this.userValue).then(res => {
+            this.$http.post(`${this.$server}/users/login`, this.userValue).then(res => {
                 console.log(res.data)
-                if ('info' in res.data && 'message' in res.data) {
-                    alert(res.data['result'], res.data.info['message'])
-                    return
-                }
                 this.$emit('set-user-status', true, res.data)
                 this.$router.push({name: 'MainPage'})
+            }).catch(err => {
+                alert('정보가 일치하지 않습니다.')
+                this.userValue.password = ''
             })
         },
     }

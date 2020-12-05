@@ -1,6 +1,6 @@
 <template>
     <div id="app">
-        <router-view :user-info="userInfo" @set-user-status="setUserStatus" />
+        <router-view :user-info="userInfo" @set-user-status="setUserStatus" @unregister="unregister" />
     </div>
 </template>
 
@@ -16,15 +16,22 @@ export default {
     },
     methods: {
         setUserStatus(login, data) {
-            var reg = this.userInfo
-
             if (login) {
-                reg = data
+                this.userInfo = data
             } else {
-                reg = {logout: true}
-                this.$http.post('http://20.194.29.5/users/logout', {'email':reg.email, 'password':reg.password}).then(res => {
+                this.$http.post(`${this.$server}/users/logout`, {'email':this.userInfo.email, 'password':this.userInfo.password}).then(res => {
                     console.log(res.data)
-                    this.$router.push({name: 'LoginPage'})
+                    this.userInfo = {logout: true}
+                })
+            }
+        },
+        unregister() {
+            if (confirm('정말로 탈퇴하시겠습니까? 이 작업은 취소할 수 없습니다.')) {
+                this.$http.delete(`${this.$server}/users/${this.userInfo['id']}`).then(res => {
+                    console.log(res.data)
+                    alert('탈퇴가 완료되었습니다.')
+                    this.userInfo = {logout: true}
+                    $router.push({name:'LoginPage'})
                 })
             }
         }

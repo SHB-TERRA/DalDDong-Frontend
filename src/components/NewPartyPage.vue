@@ -10,7 +10,7 @@
                 </div>
                 <div id="menu-right" class="row">
                     <a class="menu-button" @click="$emit('set-user-status', false);$router.push({name:'LoginPage'})">로그아웃</a>
-                    <a class="menu-button">{{userInfo['name']}}</a>
+                    <a class="menu-button" title="탈퇴하기" @click="$emit('unregister')">{{userInfo['name']}}</a>
                 </div>
             </div>
         </nav>
@@ -36,9 +36,9 @@
         <section v-if="partieslen" class="column va ha">
             <div v-for="num in partieslen" :key="num-1" class="partybox content">
                 <h2>{{parties[num-1]['name']}}</h2>
-                <p>{{parties[num-1]['place']}}</p>
-                <p>{{parties[num-1]['promise_time']}}에 {{parties[num-1]['meeting_place']}}에서 모임</p>
-                <p>{{parties[num-1]['max_people']}}명까지 참석 가능.</p>
+                <p><strong>{{parties[num-1]['place']}}</strong></p>
+                <p><strong>{{parties[num-1]['promise_time']}}</strong>에 <strong>{{parties[num-1]['meeting_place']}}</strong>에서 모임</p>
+                <p><strong>{{parties[num-1]['max_people']}}명</strong>까지 참석 가능.</p>
                 <p>{{parties[num-1]['user_id']}}님이 {{parties[num-1]['createdAt']}}에 올렸습니다.</p>
                 <input class="btn" type="button" @click="requestJoin(parties[num-1]['id'])" value="파티 참가">
                 <input class="btn" type="button" @click="requestDelete(parties[num-1]['id'])" style="background: lightred" value="삭제">
@@ -98,7 +98,7 @@ export default {
             this.newparty = {title: '', place: '', mplace: '', maxp: 2, year: 0, month: 0, date: 0, hour: 11, minute: 20}
         },
         initPage() {
-            this.$http.get('http://20.194.29.5/promises').then(res => {
+            this.$http.get(`${this.$server}/promises`).then(res => {
                 console.log(res.data)
                 this.parties = res.data['rows']
                 this.partieslen = res.data['count']
@@ -108,23 +108,23 @@ export default {
             var np = this.newparty
             var cvt = this.convertDate
 
-            this.$http.post(`http://20.194.29.5/promises`, {
+            this.$http.post(`${this.$server}/promises`, {
                     "meeting_place":np.mplace,
                     "place":np.place,
                     "max_people":np.maxp,
-                    "promise_time":`${sch.year}-${cvt(sch.month)}-${cvt(sch.date)} ${cvt(sch.hour)}:${cvt(sch.minute)}:00`,
-                    "name":np.title,
+                    "promise_day":`${np.year}-${cvt(np.month)}-${cvt(np.date)}`,
+                    "promise_time":`${cvt(np.hour)}:${cvt(np.minute)}:00`,
+                    "title":np.title,
                     "user_id":this.userInfo['user_id']
                 }).then(res => {
                     console.log(res.data)
                     alert('파티 생성 성공')
                     this.resetPartyField()
                     this.initPage()
-                    // 생성한 파티를 내 약속에 추가하는건 백엔드가 해주는지?
             })
         },
         requestJoin(id) {
-            this.$http.put(`http://20.194.29.5/promises/${id}`, {"user_id":this.userInfo['user_id']}).then(res => {
+            this.$http.post(`${this.$server}/promises/${id}`, {"user_id":this.userInfo['user_id']}).then(res => {
                 console.log(res.data)
                 if ('message' in res.data) {
                     alert(res.data['message'])
@@ -132,28 +132,23 @@ export default {
                 }
                 alert('파티 참가 성공')
                 this.initPage()
-                // 참가한 파티를 내 약속에 추가하는건 백엔드가 해주는지?
             })
         },
         requestDelete(id) {
             if (confirm('정말로 이 약속을 삭제하시겠습니까?')) {
-                this.$http.delete(`http://20.194.29.5/promises/${id}`).then(res => {
+                this.$http.delete(`${this.$server}/promises/${id}?user_id=${this.userInfo['user_id']}`).then(res => {
                     console.log(res.data)
-                    if ('message' in res.data) {
-                        alert(res.data['message'])
-                        return
-                    }
-                    alert('삭제 성공')
+                    alert('삭제되었습니다.')
                     this.initPage()
-                    // 참가한 파티를 내 약속에서 없애는건 백엔드가 해주는지?
                 })
             }
         },
         convertDate(num) {
-            if (num.length = 1) {
-                return `0${num}`
+            var cnum = String(num)
+            if (cnum.length == 1) {
+                return `0${cnum}`
             } else {
-                return num
+                return cnum
             }
         }
     },
@@ -184,6 +179,10 @@ nav {
 
 pre {
     white-space: normal;
+}
+
+strong {
+    font-size: 1.2em;
 }
 
 .btn {

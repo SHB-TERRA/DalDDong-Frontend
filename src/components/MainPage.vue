@@ -12,7 +12,7 @@
                 </div>
                 <div id="menu-right" class="row">
                     <a class="menu-button" @click="$emit('set-user-status', false);$router.push({name:'LoginPage'})">로그아웃</a>
-                    <a class="menu-button">{{userInfo['name']}}</a>
+                    <a class="menu-button" title="탈퇴하기" @click="$emit('unregister')">{{userInfo['name']}}</a>
                 </div>
             </div>
         </nav>
@@ -94,28 +94,32 @@ export default {
             var sch = this.schedule
             var cvt = this.convertDate
 
-            this.$http.post(`http://20.194.29.5/calendar/${this.userInfo.id}`, {
-                    "participants":sch.participants,
-                    "promise_day":`${sch.year}-${cvt(sch.month)}-${cvt(sch.date)}`,
-                    "promise_time":`${cvt(sch.hour)}:${cvt(sch.minute)}`,
-                    "meeting_place":sch.mplace,
-                    "place":sch.place,
-                    "user_id":this.userInfo['user_id']
-                }).then(res => {
-                console.log(res.data)
-                if ('message' in res.data) {
-                    alert(res.data.message)
-                    this.scheduleMode = false
-                } else {
-                    alert('등록 실패')
-                }
-            })
+            if (this.userInfo['email_verified']) {
+                this.$http.post(`${this.$server}/calendar/${this.userInfo.id}`, {
+                        "participants":sch.participants,
+                        "promise_day":`${sch.year}-${cvt(sch.month)}-${cvt(sch.date)}`,
+                        "promise_time":`${cvt(sch.hour)}:${cvt(sch.minute)}:00`,
+                        "meeting_place":sch.mplace,
+                        "place":sch.place,
+                        "name":sch.title,
+                        "user_id":this.userInfo['user_id']
+                    }).then(res => {
+                    console.log(res.data)
+                    if ('message' in res.data) {
+                        alert(res.data.message)
+                        this.scheduleMode = false
+                    } else {
+                        alert('등록 실패')
+                    }
+                })
+            }
         },
         convertDate(num) {
-            if (num.length = 1) {
-                return `0${num}`
+            var cnum = String(num)
+            if (cnum.length == 1) {
+                return `0${cnum}`
             } else {
-                return num
+                return cnum
             }
         }
     },
@@ -137,7 +141,7 @@ export default {
             }
         }
     },
-    mounted() {
+    created() {
         if ('logout' in this.userInfo) {
             this.$router.push({name: 'LoginPage'})
             return

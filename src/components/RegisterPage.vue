@@ -10,7 +10,7 @@
             <input type="submit" @click="requestMailAuth" value="다음 →">
         </div>
         <div v-if="!register" id="login-box" class="content column va ha marin pad">
-            <input v-model="authcode" type="password" placeholder="인증코드 입력">
+            <input v-model="authcode" type="text" placeholder="인증코드 입력">
             <input @click="requestRegister" type="submit" value="회원가입">
         </div>
     </div>
@@ -51,25 +51,22 @@ export default {
                 return
             }
 
-            this.$http.post('http://20.194.29.5/users', reg).then(res => {
+            this.$http.post(`${this.$server}/users`, reg).then(res => {
                 console.log(res.data)
-                if ('message' in res.data) {
-                    alert(res.data['message'])
-                    return
-                }
                 this.register = false
+            }).catch(err => {
+                alert('잘못된 요청입니다.')
             })
         },
         requestRegister() {
             var reg = this.userValue
 
-            this.$http.post('http://20.194.29.5/users/auth', {'email':reg.email, 'password':reg.password, 'key_for_verify':this.authcode}).then(res => {
+            this.$http.post(`${this.$server}/users/auth`, {'email':reg.email, 'password':reg.password, 'key_for_verify':this.authcode}).then(res => {
                 console.log(res.data)
-                if ('message' in res.data) {
-                    alert(res.data['message'])
-                    return
-                }
                 this.$router.push({name: 'LoginPage'})
+            }).catch(err => {
+                alert('인증번호가 잘못되었습니다.')
+                this.authcode = ''
             })
         }
     }

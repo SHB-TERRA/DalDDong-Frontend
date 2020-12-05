@@ -4,8 +4,11 @@ import Vue from 'vue'
 import App from './App'
 import router from './router'
 import axios from 'axios'
+import configuration from '../configuration'
 
 Vue.prototype.$http = axios
+
+Vue.prototype.$server = configuration['server']
 
 Vue.config.productionTip = false
 

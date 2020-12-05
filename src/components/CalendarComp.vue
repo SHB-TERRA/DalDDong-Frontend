@@ -12,16 +12,16 @@
             <li v-for="day in days" :key="day">{{day}}</li>
         </ul>
         <ul class="dates">
-            <li v-for="blank in firstDayOfMonth" :key="blank+100"><br>&nbsp;</li><li v-for="date in daysInMonth" :key="date" :class="{'current-day':(contextYear==initialYear && contextMonth==initialMonth && date==initialDate),'selected-day':(contextYear==selectedYear && contextMonth==selectedMonth && date==selectedDate)}" @click="dateSelectedChange(date)">{{date}}<br><span :class="{'event-day':date in promises}">&nbsp;{{date in promises ? promises[date]['title'] : ''}}&nbsp;</span></li>
+            <li v-for="blank in firstDayOfMonth" :key="blank+100"><br>&nbsp;</li><li v-for="date in daysInMonth" :key="date" :class="{'current-day':(contextYear==initialYear && contextMonth==initialMonth && date==initialDate),'selected-day':(contextYear==selectedYear && contextMonth==selectedMonth && date==selectedDate)}" @click="dateSelectedChange(date)">{{date}}<br><span :class="{'event-day':date in promises}">&nbsp;{{date in promises ? promises[date][0]['title'] : ''}}&nbsp;</span></li>
         </ul>
     </div>
     <div v-if="detailMode" id="detail-section">
         <input class="btn" type="button" @click="detailMode=false" value="◀">
-        <p>{{contextYear}}년 {{contextMonth}}월 {{detailDate}}일 {{detail['time']}}</p>
-        <h2>{{detail['title']}}</h2>
-        <p>{{detail['users']}}</p>
-        <p>{{detail['place']}}</p>
-        <p>{{detail['meeting_place']}}</p>
+        <p>{{contextYear}}년 {{contextMonth}}월 {{detailDate}}일 {{detail[0]['time']}}</p>
+        <h2>{{detail[0]['title']}}</h2>
+        <p><span v-for="count in detail.length()" :key="count">{{detail[count]['name']}}</span></p>
+        <p>{{detail[0]['place']}}</p>
+        <p>{{detail[0]['meeting_place']}}</p>
         <input class="btn" type="button" @click="requestDeleteEvent" value="약속 삭제">
     </div>
 </div>
@@ -86,18 +86,26 @@ export default {
             }
         },
         requestPromises(cal) {
-            this.$http.get(`http://20.194.29.5/calendar/${this.userInfo.id}`).then(res => {
+            this.$http.get(`${this.$server}/calendar/${this.userInfo.id}?month='${this.contextYear}-${this.convertDate(this.contextMonth)}'`).then(res => {
                 console.log(res.data)
-                this.promises = res.data[cal]
+                this.promises = res.data
             })
         },
         requestDeleteEvent() {
             if (confirm('정말로 이 약속을 삭제하시겠습니까?')) {
-                this.$http.delete(`http://20.194.29.5/calendar/${this.userInfo.id}`).then(res => {
+                this.$http.delete(`${this.$server}/calendar/${this.userInfo.id}`).then(res => {
                     console.log(res.data)
                     this.detailMode = false
                     this.initCalendar()
                 })
+            }
+        },
+        convertDate(num) {
+            var cnum = String(num)
+            if (cnum.length == 1) {
+                return `0${cnum}`
+            } else {
+                return cnum
             }
         }
     },
