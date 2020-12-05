@@ -41,18 +41,6 @@ export default {
 </script>
 
 <style scoped>
-input[type="text"], input[type="password"] {
-    font-size: 20px;
-    outline: none;
-    border: none;
-    border-bottom: 2px solid lightseagreen;
-}
-input[type="submit"] {
-    font-size: 20px;
-    background: #fff;
-    border: 1px solid lightseagreen;
-}
-
 .marin > * {
     margin: 7.5px;
 }

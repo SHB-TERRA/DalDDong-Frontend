@@ -7,7 +7,7 @@
             <input v-model="userValue.user_id" type="text" placeholder="사번">
             <input v-model="userValue.password" type="password" placeholder="비밀번호">
             <input v-model="pwchk" type="password" placeholder="비밀번호 다시 입력">
-            <input type="submit" @click="requestMailAuth" value="다음">
+            <input type="submit" @click="requestMailAuth" value="다음 →">
         </div>
         <div v-if="!register" id="login-box" class="content column va ha marin pad">
             <input v-model="authcode" type="password" placeholder="인증코드 입력">
