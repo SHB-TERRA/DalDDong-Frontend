@@ -24,8 +24,15 @@ export default {
             this.$router.push({name: page})
         },
         requestLogin() {
-            this.axios.post('/users/login', this.userValue).then(
-                res => { console.log(res.data) })
+            this.$http.post('/users/login', this.userValue).then(res => {
+                console.log(res.data)
+                if ('info' in res.data && 'message' in res.data) {
+                    alert(res.data['result'], res.data.info['message'])
+                    return
+                }
+                this.$emit('set-user-status', true, res.data)
+                this.$router.push({name: 'MainPage'})
+            })
         },
     }
 }

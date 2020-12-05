@@ -1,5 +1,6 @@
 <template>
-    <div>
+<div>
+    <div v-if="!detailMode">
         <div class="month">
             <ul>
                 <li class="prev" @click="changeMonth(1)">◀</li>
@@ -11,16 +12,26 @@
             <li v-for="day in days" :key="day">{{day}}</li>
         </ul>
         <ul class="dates">
-            <li v-for="blank in firstDayOfMonth" :key="blank+100"><br>&nbsp;</li><li v-for="date in daysInMonth" :key="date" :class="{'current-day':(contextYear==initialYear && contextMonth==initialMonth && date==initialDate),'selected-day':(contextYear==selectedYear && contextMonth==selectedMonth && date==selectedDate)}" @click="dateSelectedChange(date)">{{date}}<br><span :class="{'event-day':promises[date]}">&nbsp;{{promises[date]}}&nbsp;</span></li>
+            <li v-for="blank in firstDayOfMonth" :key="blank+100"><br>&nbsp;</li><li v-for="date in daysInMonth" :key="date" :class="{'current-day':(contextYear==initialYear && contextMonth==initialMonth && date==initialDate),'selected-day':(contextYear==selectedYear && contextMonth==selectedMonth && date==selectedDate)}" @click="dateSelectedChange(date)">{{date}}<br><span :class="{'event-day':date in promises}">&nbsp;{{date in promises ? promises[date]['title'] : ''}}&nbsp;</span></li>
         </ul>
     </div>
+    <div v-if="detailMode">
+        <input class="btn" type="button" @click="detailMode=false" value="돌아가기">
+        <h2>{{contextYear}}년 {{contextMonth}}월 {{detailDate}}일 {{detail['time']}}</h2>
+        <h2>{{detail['title']}}</h2>
+        <p>{{detail['users']}}</p>
+        <p>{{detail['place']}}</p>
+        <p>{{detail['meeting_place']}}</p>
+        <input class="btn" type="button" @click="requestDeleteEvent" value="약속 삭제">
+    </div>
+</div>
 </template>
 
 <script>
 import moment from 'moment'
 
 export default {
-    props: ['scheduleMode', 'selectedDate', 'selectedMonth', 'selectedYear', 'promises'],
+    props: ['userInfo', 'scheduleMode', 'selectedDate', 'selectedMonth', 'selectedYear'],
     data() {
         return {
             days: ['일', '월', '화', '수', '목', '금', '토'],
@@ -34,6 +45,10 @@ export default {
             contextDate: 0,
             daysInMonth: 0,
             firstDayOfMonth: 0,
+            promises: {},
+            detailMode: false,
+            detail: {},
+            detailDate: ''
         }
     },
     methods: {
@@ -46,6 +61,7 @@ export default {
             this.contextDate = this.dateContext.format('D')
             this.firstDayOfMonth = moment(this.dateContext).subtract((this.contextDate - 1), 'days').weekday()
             this.daysInMonth = this.dateContext.daysInMonth()
+            this.requestPromises(this.contextMonth)
         },
         changeMonth(reverse) {
             if (!reverse) {
@@ -56,15 +72,36 @@ export default {
             this.initCalendar()
         },
         dateSelectedChange(date) {
-            if (!this.scheduleMode) return
-            this.$emit('change-selected', 'd', date)
-            this.$emit('change-selected', 'm', this.contextMonth)
-            this.$emit('change-selected', 'y', this.contextYear)
-            this.$emit('close')
+            if (this.scheduleMode) {
+                this.$emit('change-selected', 'd', date)
+                this.$emit('change-selected', 'm', this.contextMonth)
+                this.$emit('change-selected', 'y', this.contextYear)
+                this.$emit('close')
+            } else {
+                this.detail = this.promises[date]
+                this.detailDate = date
+                this.detailMode = true
+            }
         },
+        requestPromises(cal) {
+            this.$http.get(`/calendar/${this.userInfo.id}`).then(res => {
+                console.log(res.data)
+                this.promises = res.data[cal]
+            })
+        },
+        requestDeleteEvent() {
+            if (confirm('정말로 이 약속을 삭제하시겠습니까?')) {
+                this.$http.delete(`/calendar/${this.userInfo.id}`).then(res => {
+                    console.log(res.data)
+                    this.detailMode = false
+                    this.initCalendar()
+                })
+            }
+        }
     },
     watch: {
         scheduleMode(mode) {
+            this.detailMode = false
             if (mode) {
                 this.$emit('change-selected', 'd', this.initialDate)
                 this.$emit('change-selected', 'm', this.contextMonth)
@@ -85,6 +122,17 @@ export default {
 <style scoped>
 li {
     list-style-type: none;
+}
+
+.btn {
+    padding: 10px;
+    -webkit-appearance: none;
+    border: 1px solid #dde;
+    border-radius: 4px;
+    background: #fff;
+    font-size: 1em;
+    color: #333;
+    cursor: pointer;
 }
 
 .month {

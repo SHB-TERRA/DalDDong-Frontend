@@ -1,12 +1,34 @@
 <template>
     <div id="app">
-        <router-view />
+        <router-view :user-info="userInfo" @set-user-status="setUserStatus" />
     </div>
 </template>
 
 <script>
 export default {
-    name: 'App'
+    name: 'App',
+    data() {
+        return {
+            userInfo: {
+                logout: true
+            }
+        }
+    },
+    methods: {
+        setUserStatus(login, data) {
+            var reg = this.userInfo
+
+            if (login) {
+                reg = data
+            } else {
+                reg = {logout: true}
+                this.$http.post('/users/logout', {'email':reg.email, 'password':reg.password}).then(res => {
+                    console.log(res.data)
+                    this.$router.push({name: 'LoginPage'})
+                })
+            }
+        }
+    }
 }
 </script>
 

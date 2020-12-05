@@ -51,14 +51,26 @@ export default {
                 return
             }
 
-            this.axios.post('/users', reg).then(
-                res => { console.log(res.data) })
-
-            this.register = false
+            this.$http.post('/users', reg).then(res => {
+                console.log(res.data)
+                if ('message' in res.data) {
+                    alert(res.data['message'])
+                    return
+                }
+                this.register = false
+            })
         },
         requestRegister() {
-            this.axios.post('/users/auth', authcode).then(
-                res => { console.log(res.data) })
+            var reg = this.userValue
+
+            this.$http.post('/users/auth', {'email':reg.email, 'password':reg.password, 'key_for_verify':this.authcode}).then(res => {
+                console.log(res.data)
+                if ('message' in res.data) {
+                    alert(res.data['message'])
+                    return
+                }
+                this.$router.push({name: 'LoginPage'})
+            })
         }
     }
 }

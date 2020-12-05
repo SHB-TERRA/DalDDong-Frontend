@@ -11,7 +11,7 @@
                     <b>캘린더</b>
                 </div>
                 <div id="menu-right" class="row">
-                    <a class="menu-button" @click="openPage('LoginPage')">로그아웃</a>
+                    <a class="menu-button" @click="$emit('set-user-status', false)">로그아웃</a>
                     <a class="menu-button">마이페이지</a>
                 </div>
             </div>
@@ -22,15 +22,17 @@
                 <input id="title-field" type="text" v-model="schedule.title" placeholder="약속 이름">
                 <input v-for="participant in schedule.participants" class="btn" type="button" :key="participant" :value="participant" @click="deleteParticipant(participant)">
                 <input id="text-field" type="text" v-model="schedule.participantValue" placeholder="..참석자 추가" @keyup.enter="addParticipant">
+                <input id="text-field" type="text" v-model="schedule.place" placeholder="약속 장소">
+                <input id="text-field" type="text" v-model="schedule.mplace" placeholder="모임 장소">
                 <p>{{schedule.year}}년 {{schedule.month}}월 {{schedule.date}}일</p>
                 <input class="numpicker" type="number" v-model="schedule.hour" min="9" max="14"><span>시</span>
                 <input class="numpicker" type="number" v-model="schedule.minute" min="0" max="55" step="5"><span>분</span><br>
-                <input class="btn" type="button" @click="requestAddEvent()" value="약속 추가">
+                <input class="btn" type="button" @click="requestAddEvent" value="약속 추가">
                 <!--일단 행번으로 보내고 나중에 동명이인 선택창 추가-->
             </div>
         </section>
         <section class="row va ha">
-            <CalendarComp id="calendar" class="content" :schedule-mode="scheduleMode" :selected-year="schedule.year" :selected-month="schedule.month" :selected-date="schedule.date" :promises="promises" @change-schedule="changeScheduleMode" @change-selected="changeSelected"/>
+            <CalendarComp id="calendar" class="content" :user-info="userInfo" :schedule-mode="scheduleMode" :selected-year="schedule.year" :selected-month="schedule.month" :selected-date="schedule.date" @change-schedule="changeScheduleMode" @change-selected="changeSelected"/>
         </section>
     </div>
 </template>
@@ -42,14 +44,16 @@ export default {
     components: {
         CalendarComp
     },
+    props: ['userInfo'],
     data() {
         return {
-            promises: {9:'ㅁㄴㅇㄹ', 15:'ㅋㅌㅊㅍ'},
             scheduleMode: false,
             schedule: {
-                name: '',
+                title: '',
                 participants: [],
                 participantValue: '',
+                mplace: '',
+                place: '',
                 year: 0,
                 month: 0,
                 date: 0,
@@ -86,10 +90,58 @@ export default {
             this.scheduleMode = mode
         },
         requestAddEvent() {
-            this.axios.post('/api/data', ).then(
-                res => { console.log(res.data) })
+            var sch = this.schedule
+            var cvt = this.convertDate
+
+            this.$http.post(`/calendar/${this.userInfo.id}`, {
+                    "participants":sch.participants,
+                    "promise_day":`${sch.year}-${cvt(sch.month)}-${cvt(sch.date)}`,
+                    "promise_time":`${cvt(sch.hour)}:${cvt(sch.minute)}`,
+                    "meeting_place":sch.mplace,
+                    "place":sch.place,
+                    "user_id":this.userInfo['user_id']
+                }).then(res => {
+                console.log(res.data)
+                if ('message' in res.data) {
+                    alert(res.data.message)
+                    this.scheduleMode = false
+                } else {
+                    alert('등록 실패')
+                }
+            })
+        },
+        convertDate(num) {
+            if (num.length = 1) {
+                return `0${num}`
+            } else {
+                return num
+            }
         }
     },
+    watch: {
+        scheduleMode(val) {
+            if (!val) {
+                this.schedule = {
+                    title: '',
+                    participants: [],
+                    participantValue: '',
+                    mplace: '',
+                    place: '',
+                    year: 0,
+                    month: 0,
+                    date: 0,
+                    hour: 11,
+                    minute: 20
+                }
+            }
+        }
+    },
+    mounted() {
+        if ('logout' in this.userInfo) {
+            this.$router.push({name: 'LoginPage'})
+            return
+        }
+    }
 }
 </script>
 

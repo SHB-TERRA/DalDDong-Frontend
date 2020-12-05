@@ -9,7 +9,7 @@
                     <b>파티 만들기</b>
                 </div>
                 <div id="menu-right" class="row">
-                    <a class="menu-button" @click="openPage('LoginPage')">로그아웃</a>
+                    <a class="menu-button" @click="$emit('set-user-status', false)">로그아웃</a>
                     <a class="menu-button">마이페이지</a>
                 </div>
             </div>
@@ -19,25 +19,29 @@
             <div id="newpartyfield" class="content">
                 <input id="title-field" type="text" v-model="newparty.title" :placeholder="(newparty.title||newparty.desc)?'제목':'파티 만들기'">
                 <div v-if="newparty.title||newparty.desc">
-                <input id="text-field" type="text" v-model="newparty.desc" placeholder="설명">
-                <p><span v-if="newparty.year">{{newparty.year}}년 {{newparty.month}}월 {{newparty.date}}일</span> <span class="link" v-if="!scheduleMode" @click="scheduleMode=true">날짜 선택</span><span class="link" v-if="scheduleMode" @click="scheduleMode=false">취소</span></p>
-                <input class="numpicker" type="number" v-model="newparty.hour" min="9" max="14"><span>시</span>
-                <input class="numpicker" type="number" v-model="newparty.minute" min="0" max="55" step="5"><span>분</span><br>
-                <input class="btn" type="button" value="파티 만들기">
-                <input class="btn" type="button" @click="resetPartyField" value="취소">
+                    <input id="text-field" type="text" v-model="newparty.place" placeholder="약속 장소">
+                    <input id="text-field" type="text" v-model="newparty.mplace" placeholder="모임 장소">
+                    <span>최대 참가자</span><input class="numpicker" type="number" v-model="newparty.maxp" min="2" max="50"><span>명</span>
+                    <p><span v-if="newparty.year">{{newparty.year}}년 {{newparty.month}}월 {{newparty.date}}일</span> <span class="link" v-if="!scheduleMode" @click="scheduleMode=true">날짜 선택</span><span class="link" v-if="scheduleMode" @click="scheduleMode=false">취소</span></p>
+                    <input class="numpicker" type="number" v-model="newparty.hour" min="9" max="14"><span>시</span>
+                    <input class="numpicker" type="number" v-model="newparty.minute" min="0" max="55" step="5"><span>분</span><br>
+                    <input class="btn" type="button" @click="requestCreate" value="파티 만들기">
+                    <input class="btn" type="button" @click="resetPartyField" value="취소">
                 </div>
             </div>
         </section>
         <section class="column va ha">
-            <CalendarComp v-if="scheduleMode" id="calendar" class="content" :schedule-mode="scheduleMode" :selected-year="newparty.year" :selected-month="newparty.month" :selected-date="newparty.date" :promises="promises" @change-schedule="changeScheduleMode" @change-selected="changeSelected" @close="scheduleMode=false" />
+            <CalendarComp v-if="scheduleMode" id="calendar" class="content" :user-info="userInfo" :schedule-mode="scheduleMode" :selected-year="newparty.year" :selected-month="newparty.month" :selected-date="newparty.date" @change-schedule="changeScheduleMode" @change-selected="changeSelected" @close="scheduleMode=false" />
         </section>
-        <section class="column va ha">
-            <div class="partybox content">
-                <h2>Mauris et ligula sed nibh</h2>
-                <pre>vulputate rhoncus eu ac magna. Ut ac turpis sed ipsum blandit vulputate. In ultrices, augue vel ultrices tristique, orci dolor faucibus erat, sit amet hendrerit magna velit a magna. Curabitur quis nibh ac diam sagittis eleifend at et odio. Phasellus et enim malesuada justo accumsan accumsan.</pre>
-                <p>현재 참석자 {{2}}명. {{4}}명까지 참석 가능.</p>
-                <input class="btn" type="button" value="파티 참가">
-                <input class="btn" type="button" style="background: lightred" value="삭제">
+        <section v-if="partieslen" class="column va ha">
+            <div v-for="num in partieslen" :key="num-1" class="partybox content">
+                <h2>{{parties[num-1]['name']}}</h2>
+                <p>{{parties[num-1]['place']}}</p>
+                <p>{{parties[num-1]['promise_time']}}에 {{parties[num-1]['meeting_place']}}에서 모임</p>
+                <p>{{parties[num-1]['max_people']}}명까지 참석 가능.</p>
+                <p>{{parties[num-1]['user_id']}}님이 {{parties[num-1]['createdAt']}}에 올렸습니다.</p>
+                <input class="btn" type="button" @click="requestJoin(parties[num-1]['id'])" value="파티 참가">
+                <input class="btn" type="button" @click="requestDelete(parties[num-1]['id'])" style="background: lightred" value="삭제">
             </div>
         </section>
     </div>
@@ -50,13 +54,17 @@ export default {
     components: {
         CalendarComp
     },
+    props: ['userInfo'],
     data() {
         return {
-            promises: '',
+            parties: [],
+            partieslen: 0,
             scheduleMode: false,
             newparty: {
                 title: '',
-                desc: '',
+                place: '',
+                mplace: '',
+                maxp: 2,
                 year: 0,
                 month: 0,
                 date: 0,
@@ -87,8 +95,74 @@ export default {
         },
         resetPartyField() {
             this.scheduleMode = false
-            this.newparty = {title: '', desc: '', year: 0, month: 0, date: 0, hour: 11, minute: 20}
+            this.newparty = {title: '', place: '', mplace: '', maxp: 2, year: 0, month: 0, date: 0, hour: 11, minute: 20}
+        },
+        initPage() {
+            this.$http.get('/promises').then(res => {
+                console.log(res.data)
+                this.parties = res.data['rows']
+                this.partieslen = res.data['count']
+            })
+        },
+        requestCreate() {
+            var np = this.newparty
+            var cvt = this.convertDate
+
+            this.$http.post(`/promises`, {
+                    "meeting_place":np.mplace,
+                    "place":np.place,
+                    "max_people":np.maxp,
+                    "promise_time":`${sch.year}-${cvt(sch.month)}-${cvt(sch.date)} ${cvt(sch.hour)}:${cvt(sch.minute)}:00`,
+                    "name":np.title,
+                    "user_id":this.userInfo['user_id']
+                }).then(res => {
+                    console.log(res.data)
+                    alert('파티 생성 성공')
+                    this.resetPartyField()
+                    this.initPage()
+                    // 생성한 파티를 내 약속에 추가하는건 백엔드가 해주는지?
+            })
+        },
+        requestJoin(id) {
+            this.$http.put(`/promises/${id}`, {"user_id":this.userInfo['user_id']}).then(res => {
+                console.log(res.data)
+                if ('message' in res.data) {
+                    alert(res.data['message'])
+                    return
+                }
+                alert('파티 참가 성공')
+                this.initPage()
+                // 참가한 파티를 내 약속에 추가하는건 백엔드가 해주는지?
+            })
+        },
+        requestDelete(id) {
+            if (confirm('정말로 이 약속을 삭제하시겠습니까?')) {
+                this.$http.delete(`/promises/${id}`).then(res => {
+                    console.log(res.data)
+                    if ('message' in res.data) {
+                        alert(res.data['message'])
+                        return
+                    }
+                    alert('삭제 성공')
+                    this.initPage()
+                    // 참가한 파티를 내 약속에서 없애는건 백엔드가 해주는지?
+                })
+            }
+        },
+        convertDate(num) {
+            if (num.length = 1) {
+                return `0${num}`
+            } else {
+                return num
+            }
         }
+    },
+    mounted() {
+        // if ('logout' in this.userInfo) {
+        //     this.$router.push({name: 'LoginPage'})
+        //     return
+        // }
+        this.initPage()
     }
 }
 </script>
