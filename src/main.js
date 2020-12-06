@@ -4,9 +4,16 @@ import Vue from 'vue'
 import App from './App'
 import router from './router'
 import axios from 'axios'
+import { library } from '@fortawesome/fontawesome-svg-core'
+import { faMapMarkerAlt, faClock, faUserFriends, faPen } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import configuration from '../configuration'
 
 Vue.prototype.$http = axios
+
+library.add(faMapMarkerAlt, faClock, faUserFriends, faPen)
+
+Vue.component('font-awesome-icon', FontAwesomeIcon)
 
 Vue.prototype.$server = configuration['server']
 

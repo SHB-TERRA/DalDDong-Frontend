@@ -26,7 +26,7 @@ export default {
             this.$router.push({name: page})
         },
         requestLogin() {
-            this.$http.post(`${this.$server}/users/login`, this.userValue).then(res => {
+            this.$http.post(`${this.$server}/users/login`, this.userValue, { withCredentials: true }).then(res => {
                 console.log(res.data)
                 this.$emit('set-user-status', true, res.data)
                 this.$router.push({name: 'MainPage'})

@@ -35,6 +35,7 @@
         <section class="row va ha">
             <CalendarComp id="calendar" class="content" :user-info="userInfo" :schedule-mode="scheduleMode" :selected-year="schedule.year" :selected-month="schedule.month" :selected-date="schedule.date" @change-schedule="changeScheduleMode" @change-selected="changeSelected"/>
         </section>
+        <div id="topbox"></div>
     </div>
 </template>
 
@@ -103,7 +104,7 @@ export default {
                         "place":sch.place,
                         "name":sch.title,
                         "user_id":this.userInfo['user_id']
-                    }).then(res => {
+                    }, { withCredentials: true }).then(res => {
                     console.log(res.data)
                     if ('message' in res.data) {
                         alert(res.data.message)

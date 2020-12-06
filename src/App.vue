@@ -27,7 +27,7 @@ export default {
         },
         unregister() {
             if (confirm('정말로 탈퇴하시겠습니까? 이 작업은 취소할 수 없습니다.')) {
-                this.$http.delete(`${this.$server}/users/${this.userInfo['id']}`).then(res => {
+                this.$http.delete(`${this.$server}/users/${this.userInfo['id']}`, { withCredentials: true }).then(res => {
                     console.log(res.data)
                     alert('탈퇴가 완료되었습니다.')
                     this.userInfo = {logout: true}

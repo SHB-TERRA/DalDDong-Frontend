@@ -17,11 +17,11 @@
     </div>
     <div v-if="detailMode" id="detail-section">
         <input class="btn" type="button" @click="detailMode=false" value="◀">
-        <p>{{contextYear}}년 {{contextMonth}}월 {{detailDate}}일 {{detail[0]['time']}}</p>
+        <p>{{contextYear}}년 {{contextMonth}}월 {{detailDate}}일</p>
         <h2>{{detail[0]['title']}}</h2>
-        <p><span v-for="count in detail.length()" :key="count">{{detail[count]['name']}}</span></p>
-        <p>{{detail[0]['place']}}</p>
-        <p>{{detail[0]['meeting_place']}}</p>
+        <p><font-awesome-icon icon="map-marker-alt" />{{detail[0]['place']}}</p>
+        <p><font-awesome-icon icon="clock" />{{detail[0]['time']}}에 {{detail[0]['meeting_place']}}에서 모임</p>
+        <p><font-awesome-icon icon="user-friends" /><span v-for="count in detail.length-1" :key="count">{{detail[count]['name']}} </span></p>
         <input class="btn" type="button" @click="requestDeleteEvent" value="약속 삭제">
     </div>
 </div>
@@ -86,14 +86,14 @@ export default {
             }
         },
         requestPromises(cal) {
-            this.$http.get(`${this.$server}/calendar/${this.userInfo.id}?month='${this.contextYear}-${this.convertDate(this.contextMonth)}'`).then(res => {
+            this.$http.get(`${this.$server}/calendar/${this.userInfo.id}?month=${this.contextYear}-${this.convertDate(this.contextMonth)}`,{ withCredentials: true }).then(res => {
                 console.log(res.data)
                 this.promises = res.data
             })
         },
         requestDeleteEvent() {
             if (confirm('정말로 이 약속을 삭제하시겠습니까?')) {
-                this.$http.delete(`${this.$server}/calendar/${this.userInfo.id}`).then(res => {
+                this.$http.delete(`${this.$server}/calendar/${this.userInfo.id}`, { withCredentials: true }).then(res => {
                     console.log(res.data)
                     this.detailMode = false
                     this.initCalendar()
@@ -143,6 +143,10 @@ li {
     font-size: 1em;
     color: #333;
     cursor: pointer;
+}
+
+svg {
+    margin-right: 10px;
 }
 
 .month {
@@ -221,5 +225,11 @@ li {
 
 #detail-section {
     padding: 50px 30px;
+}
+#detail-section h2 {
+    color: #334;
+}
+#detail-section p {
+    color: #667;
 }
 </style>

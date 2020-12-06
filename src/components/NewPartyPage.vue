@@ -16,9 +16,9 @@
         </nav>
         <div id="topbox"></div>
         <section class="row va ha">
-            <div id="newpartyfield" class="content">
+            <div id="newpartyfield" class="content" :class="{'p30':newparty.title, 'p10':!(newparty.title)}">
                 <input id="title-field" type="text" v-model="newparty.title" :placeholder="(newparty.title||newparty.desc)?'제목':'파티 만들기'">
-                <div v-if="newparty.title||newparty.desc">
+                <div v-if="newparty.title">
                     <input id="text-field" type="text" v-model="newparty.place" placeholder="약속 장소">
                     <input id="text-field" type="text" v-model="newparty.mplace" placeholder="모임 장소">
                     <span>최대 참가자</span><input class="numpicker" type="number" v-model="newparty.maxp" min="2" max="50"><span>명</span>
@@ -34,16 +34,17 @@
             <CalendarComp v-if="scheduleMode" id="calendar" class="content" :user-info="userInfo" :schedule-mode="scheduleMode" :selected-year="newparty.year" :selected-month="newparty.month" :selected-date="newparty.date" @change-schedule="changeScheduleMode" @change-selected="changeSelected" @close="scheduleMode=false" />
         </section>
         <section v-if="partieslen" class="column va ha">
-            <div v-for="num in partieslen" :key="num-1" class="partybox content">
+            <div v-for="num in partieslen" :key="num-1" id="partylist" class="partybox content p30">
                 <h2>{{parties[num-1]['name']}}</h2>
-                <p><strong>{{parties[num-1]['place']}}</strong></p>
-                <p><strong>{{parties[num-1]['promise_time']}}</strong>에 <strong>{{parties[num-1]['meeting_place']}}</strong>에서 모임</p>
-                <p><strong>{{parties[num-1]['max_people']}}명</strong>까지 참석 가능.</p>
-                <p>{{parties[num-1]['user_id']}}님이 {{parties[num-1]['createdAt']}}에 올렸습니다.</p>
+                <p><font-awesome-icon icon="map-marker-alt" /><strong>{{parties[num-1]['place']}}</strong></p>
+                <p><font-awesome-icon icon="clock" /><strong>{{parties[num-1]['promise_day']}} {{parties[num-1]['promise_time']}}</strong>에 <strong>{{parties[num-1]['meeting_place']}}</strong>에서 모임</p>
+                <p><font-awesome-icon icon="user-friends" /><strong>{{parties[num-1]['max_people']}}명</strong>까지 참석 가능.</p>
+                <p><font-awesome-icon icon="pen" />{{parties[num-1]['user_id']}}님이 {{parties[num-1]['createdAt']}}에 올렸습니다.</p>
                 <input class="btn" type="button" @click="requestJoin(parties[num-1]['id'])" value="파티 참가">
                 <input class="btn" type="button" @click="requestDelete(parties[num-1]['id'])" style="background: lightred" value="삭제">
             </div>
         </section>
+        <div id="topbox"></div>
     </div>
 </template>
 
@@ -98,7 +99,7 @@ export default {
             this.newparty = {title: '', place: '', mplace: '', maxp: 2, year: 0, month: 0, date: 0, hour: 11, minute: 20}
         },
         initPage() {
-            this.$http.get(`${this.$server}/promises`).then(res => {
+            this.$http.get(`${this.$server}/promises`, { withCredentials: true }).then(res => {
                 console.log(res.data)
                 this.parties = res.data['rows']
                 this.partieslen = res.data['count']
@@ -116,7 +117,7 @@ export default {
                     "promise_time":`${cvt(np.hour)}:${cvt(np.minute)}:00`,
                     "title":np.title,
                     "user_id":this.userInfo['user_id']
-                }).then(res => {
+                }, { withCredentials: true }).then(res => {
                     console.log(res.data)
                     alert('파티 생성 성공')
                     this.resetPartyField()
@@ -124,7 +125,7 @@ export default {
             })
         },
         requestJoin(id) {
-            this.$http.post(`${this.$server}/promises/${id}`, {"user_id":this.userInfo['user_id']}).then(res => {
+            this.$http.post(`${this.$server}/promises/${id}`, {"user_id":this.userInfo['user_id']}, { withCredentials: true }).then(res => {
                 console.log(res.data)
                 if ('message' in res.data) {
                     alert(res.data['message'])
@@ -136,7 +137,7 @@ export default {
         },
         requestDelete(id) {
             if (confirm('정말로 이 약속을 삭제하시겠습니까?')) {
-                this.$http.delete(`${this.$server}/promises/${id}?user_id=${this.userInfo['user_id']}`).then(res => {
+                this.$http.delete(`${this.$server}/promises/${id}?user_id=${this.userInfo['user_id']}`, { withCredentials: true }).then(res => {
                     console.log(res.data)
                     alert('삭제되었습니다.')
                     this.initPage()
@@ -185,6 +186,10 @@ strong {
     font-size: 1.2em;
 }
 
+svg {
+    margin-right: 10px;
+}
+
 .btn {
     padding: 10px;
     -webkit-appearance: none;
@@ -203,6 +208,13 @@ strong {
     color: darkblue;
     text-decoration: underline;
     cursor: pointer;
+}
+
+.p30 {
+    padding: 30px;
+}
+.p10 {
+    padding: 10px 30px;
 }
 
 .numpicker {
@@ -276,13 +288,20 @@ strong {
     margin-top: 25px;
     border: 1px solid #e4e4e4;
     background: #fff;
-    padding: 30px;
 }
 
 #calendar {
     margin-top: 25px;
     border: 1px solid #e4e4e4;
     background: #fff;
+}
+
+#partylist h2 {
+    color: #334;
+    margin-top: 0;
+}
+#partylist p {
+    color: #667;
 }
 
 @media screen and (max-width:720px) {
